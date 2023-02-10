@@ -15,23 +15,22 @@ export default async function handler(
   const user = decodedCredentials.split(':');
   const username = user[0];
   const password = user[1];
+
   const jsonDirectory = path.join(process.cwd(), 'json');
   const fileContents = await fs.readFile(jsonDirectory + '/users.json', 'utf8');
   const users = JSON.parse(fileContents);
-  const userIndex = users.findIndex((elem: { username: string, password: string; }) => elem.username === username);
+  const userExistence = users.some((elem: { username: string, password: string; }) => elem.username === username);
   var response;
 
-  if (userIndex !== -1)
+  if (userExistence)
   {
-    const matchPassword = passwordHash.verify(password, users[userIndex].password);
-    if (matchPassword)
-      response = "You are connected !";
-    else
-      response = "Wrong password";
+    response = "User already exists";
   }
   else
   {
-    response = "User does not exist";
+    users.push({username: username, password: passwordHash.generate(password)})
+    await fs.writeFile(jsonDirectory + '/users.json', JSON.stringify(users), 'utf8');
+    response = "User registered successfully";
   }
   
   res.status(200).json({response: response});

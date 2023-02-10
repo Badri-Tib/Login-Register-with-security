@@ -1,33 +1,76 @@
-import { useState } from "react";
-import * as passwordHash from "password-hash";
+import React, { useState } from "react";
+import Image from "next/image";
 
-const LoginComponent = () => {
+const LoginComponent = () =>
+{
   const [visible, setVisible] = useState<boolean>(false);
+  const [usernameLoginValue, setUsernameLoginValue] = useState<string>('');
+  const [passwordLoginValue, setPasswordLoginValue] = useState<string>('');
+  const [usernameRegisterValue, setUsernameRegisterValue] = useState<string>('');
+  const [passwordRegisterValue, setPasswordRegisterValue] = useState<string>('');
 
-  const signUpSubmit = (e: React.FormEvent<any>) => {
+  const handleReset = (e: React.FormEvent<any>) =>
+  {
+    e.preventDefault();
+    setUsernameLoginValue('');
+    setPasswordLoginValue('');
+    setUsernameRegisterValue('');
+    setPasswordRegisterValue('');
+  }
+  
+  const signUpSubmit = async (e: React.FormEvent<any>) =>
+  {
     e.preventDefault();
     const data = {
       username: e.currentTarget.elements.username.value,
-      email: e.currentTarget.elements.email.value,
       password: e.currentTarget.elements.password.value,
     };
-    alert(
-      "username: " +
-        data.username +
-        " email: " +
-        data.email +
-        " password: " +
-        data.password
-    );
+
+    if (data.username === '' || data.password === '')
+    {
+      alert("Fill all the form please");
+      return;
+    }
+
+    const fetchWithAuth = async (url: string, username: string, password: string) => {
+      const encodedAuth = btoa(`${username}:${password}`);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      });
+      return response.json();
+    };
+    const response = await fetchWithAuth('/api/registration', data.username, data.password);
+
+    alert(response.response);
   };
 
-  const signInSubmit = (e: React.FormEvent<any>) => {
+  const signInSubmit = async (e: React.FormEvent<any>) => {
     e.preventDefault();
     const data = {
       username: e.currentTarget.elements.username.value,
       password: e.currentTarget.elements.password.value,
     };
-    alert("username: " + data.username + " password: " + passwordHash.generate(data.password));
+
+    if (data.username === '' || data.password === '')
+    {
+      alert("Fill all the form please");
+      return;
+    }
+    
+    const fetchWithAuth = async (url: string, username: string, password: string) => {
+      const encodedAuth = btoa(`${username}:${password}`);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Basic ${encodedAuth}`,
+        },
+      });
+      return response.json();
+    };
+    const response = await fetchWithAuth('/api/authentification', data.username, data.password);
+
+    alert(response.response);
   };
 
   const iconInputStyle = {
@@ -43,7 +86,8 @@ const LoginComponent = () => {
       <div className={`container ${visible ? "sign-up-mode" : ""}`}>
         <div className="forms-container">
           <div className="signin-signup">
-            <form action="#" className="sign-in-form" onSubmit={signInSubmit}>
+            <form action="#" className="sign-in-form" onSubmit={signInSubmit} onReset={handleReset}>
+              <Image src="/japGhost.png" alt="App logo" width={100} height={170} />
               <h2 className="title">Login</h2>
               <div className="input-field">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -53,7 +97,7 @@ const LoginComponent = () => {
                   src="https://img.icons8.com/material-sharp/24/000000/user.png"
                 />
 
-                <input name="username" type="text" placeholder="Username" />
+                <input value={usernameLoginValue} onChange={(e) => setUsernameLoginValue(e.target.value)} name="username" type="text" placeholder="Username" />
               </div>
               <div className="input-field">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -62,9 +106,12 @@ const LoginComponent = () => {
                   style={iconInputStyle}
                   src="https://img.icons8.com/ios-glyphs/30/000000/lock--v1.png"
                 />
-                <input name="password" type="password" placeholder="Password" />
+                <input value={passwordLoginValue} onChange={(e) => setPasswordLoginValue(e.target.value)} name="password" type="password" placeholder="Password" />
               </div>
-              <input type="submit" value="Login" className="btn solid" />
+              <div>
+                <input type="submit" value="Login" className="btn solid" />
+                <input type="reset" value="Reset" className="btn2" />
+              </div>
               <p className="social-text">Or login with social platforms</p>
               <div className="social-media">
                 <a href="#" className="social-icon">
@@ -98,7 +145,8 @@ const LoginComponent = () => {
               </div>
             </form>
 
-            <form action="#" className="sign-up-form" onSubmit={signUpSubmit}>
+            <form action="#" className="sign-up-form" onSubmit={signUpSubmit} onReset={handleReset}>
+              <Image src="/japGhost.png" alt="App logo" width={100} height={170} />
               <h2 className="title">Register</h2>
               <div className="input-field">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -107,17 +155,7 @@ const LoginComponent = () => {
                   style={iconInputStyle}
                   src="https://img.icons8.com/material-sharp/24/000000/user.png"
                 />
-                <input name="username" type="text" placeholder="Username" />
-              </div>
-              <div className="input-field">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://img.icons8.com/ios-filled/50/000000/secured-letter--v1.png"
-                  alt="logo"
-                  style={iconInputStyle}
-                />
-
-                <input name="email" type="email" placeholder="Email" />
+                <input value={usernameRegisterValue} onChange={(e) => setUsernameRegisterValue(e.target.value)} name="username" type="text" placeholder="Username" />
               </div>
               <div className="input-field">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -126,9 +164,12 @@ const LoginComponent = () => {
                   style={iconInputStyle}
                   src="https://img.icons8.com/ios-glyphs/30/000000/lock--v1.png"
                 />
-                <input name="password" type="password" placeholder="Password" />
+                <input value={passwordRegisterValue} onChange={(e) => setPasswordRegisterValue(e.target.value)} name="password" type="password" placeholder="Password" />
               </div>
-              <input type="submit" className="btn" value="Register" />
+              <div>
+                <input type="submit" className="btn" value="Register" />
+                <input type="reset" value="Reset" className="btn2" />
+              </div>
               <p className="social-text">Or register with social platforms</p>
               <div className="social-media">
                 <a href="#" className="social-icon">
@@ -337,7 +378,7 @@ const LoginComponent = () => {
 
         .btn {
           width: 150px;
-          background-color: #5995fd;
+          background-color: #dd1818;
           border: none;
           outline: none;
           height: 49px;
@@ -351,8 +392,28 @@ const LoginComponent = () => {
         }
 
         .btn:hover {
-          background-color: #4d84e2;
+          background-color: #AA0505;
         }
+
+        .btn2 {
+          width: 150px;
+          background-color: #BDCDD6;
+          border: none;
+          outline: none;
+          height: 49px;
+          border-radius: 49px;
+          color: #fff;
+          text-transform: uppercase;
+          font-weight: 600;
+          margin: 10px 0 10px 10px;
+          cursor: pointer;
+          transition: 0.5s;
+        }
+
+        .btn2:hover {
+          background-color: #9BABB4;
+        }
+
         .panels-container {
           position: absolute;
           height: 100%;
@@ -371,7 +432,7 @@ const LoginComponent = () => {
           top: -10%;
           right: 48%;
           transform: translateY(-50%);
-          background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
+          background-image: linear-gradient(-45deg, #333333 0%, #dd1818 100%);
           transition: 1.8s ease-in-out;
           border-radius: 50%;
           z-index: 6;

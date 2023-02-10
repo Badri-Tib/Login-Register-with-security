@@ -53,6 +53,6 @@ You can start by creating your own user, or by using this test user:
 
 ```bash
 username: test
-# or
+# And
 password: 123
 ```
